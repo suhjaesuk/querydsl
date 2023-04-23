@@ -444,4 +444,36 @@ public class QuerydslBasicTest {
             System.out.println("s = " + s);
         }
     }
+    
+    @Test
+    public void simpleProjection() {
+        List<String> result = queryFactory
+                .select(member.username)
+                .from(member)
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+    }
+
+    /**
+     * tuple 과 다른 클래스와 의존한다면 나쁜 설계다.
+     * dto 로 변환을 해야 좋은 설계
+     */
+    @Test
+    public void tupleProjection() {
+        List<Tuple> result = queryFactory.select(member.username, member.age)
+                .from(member)
+                .fetch();
+
+        for (Tuple tuple : result) {
+            String username = tuple.get(member.username);
+            Integer age = tuple.get(member.age);
+            System.out.println("username = " + username);
+            System.out.println("age = " + age);
+        }
+    }
+
+    
 }
