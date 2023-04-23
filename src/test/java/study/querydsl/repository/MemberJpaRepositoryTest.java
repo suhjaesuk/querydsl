@@ -75,6 +75,5 @@ class MemberJpaRepositoryTest {
         condition.setTeamName("teamB");
 
         List<MemberTeamDto> result = memberJpaRepository.searchByBuilder(condition);
-        
     }
 }
