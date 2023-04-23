@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 import study.querydsl.dto.MemberDto;
 import study.querydsl.dto.QMemberDto;
@@ -661,7 +662,6 @@ public class QuerydslBasicTest {
         return member.age.eq(ageCond);
     }
 
-
     // 조립할 수 있다.
     // 가독성이 좋아진다는 장점.
     // null 처리는 따로 해야함.
@@ -680,7 +680,46 @@ public class QuerydslBasicTest {
         if (ageCond == null) return null;
         return member.age.eq(ageCond);
     }
+
     private BooleanExpression allEq(String usernameCond, Integer ageCond){
         return usernameEq2(usernameCond).and(ageEq2(ageCond));
+    }
+
+    /**
+     * bulk 연산
+     */
+    @Test
+    @Commit
+    public void bulkUpdate() {
+
+        //member1 = 10 -> 비회원
+        //member2 = 20 -> 비회원
+        long count = queryFactory
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(28))
+                .execute();
+    }
+
+    /**
+     * 모든 회원 나이 +1
+     */
+    @Test
+    public void bulkAdd() {
+        long count = queryFactory
+                .update(member)
+                .set(member.age, member.age.add(1))
+                .execute();
+    }
+
+    /**
+     * 18살 이상 회원은 지우기
+     */
+    @Test
+    public void bulkDelete() {
+        long count = queryFactory
+                .delete(member)
+                .where(member.age.gt(18))
+                .execute();
     }
 }
