@@ -1,9 +1,12 @@
 package study.querydsl;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
@@ -603,4 +606,81 @@ public class QuerydslBasicTest {
         }
     }
 
+    /**
+     * 동적쿼리 해결방법 1. BooleanBuilder
+     */
+    @Test
+    public void dynamicQuery_BooleanBuilder() {
+        String usernameParam = "member1";
+        Integer ageParam = null;
+
+        List<Member> result = searchMember1(usernameParam, ageParam);
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+    private List<Member> searchMember1(String usernameCond, Integer ageCond) {
+
+        BooleanBuilder builder = new BooleanBuilder();
+        if (usernameCond != null) {
+            builder.and(member.username.eq(usernameCond));
+        }
+
+        if (ageCond != null) {
+            builder.and(member.age.eq(ageCond));
+        }
+        return queryFactory.selectFrom(member)
+                .where(builder)
+                .fetch();
+    }
+
+    /**
+     * 동적쿼리 해결방법 2. where 다중파라미터
+     */
+    @Test
+    public void dynamicQuery_WhereParam() {
+        String usernameParam = "member1";
+        Integer ageParam = 10;
+
+        List<Member> result = searchMember2(usernameParam, ageParam);
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+    private List<Member> searchMember2(String usernameCond, Integer ageCond) {
+        return queryFactory.selectFrom(member)
+                .where(usernameEq(usernameCond), ageEq(ageCond))
+                .fetch();
+    }
+
+    private Predicate usernameEq(String usernameCond) {
+        if(usernameCond == null) return null;
+        return member.username.eq(usernameCond);
+    }
+
+    private Predicate ageEq(Integer ageCond) {
+        if (ageCond == null) return null;
+        return member.age.eq(ageCond);
+    }
+
+
+    // 조립할 수 있다.
+    // 가독성이 좋아진다는 장점.
+    // null 처리는 따로 해야함.
+    private List<Member> searchMember2AllEq(String usernameCond, Integer ageCond) {
+        return queryFactory.selectFrom(member)
+                .where(allEq(usernameCond,ageCond))
+                .fetch();
+    }
+
+    private BooleanExpression usernameEq2(String usernameCond) {
+        if(usernameCond == null) return null;
+        return member.username.eq(usernameCond);
+    }
+
+    private BooleanExpression ageEq2(Integer ageCond) {
+        if (ageCond == null) return null;
+        return member.age.eq(ageCond);
+    }
+    private BooleanExpression allEq(String usernameCond, Integer ageCond){
+        return usernameEq2(usernameCond).and(ageEq2(ageCond));
+    }
 }
