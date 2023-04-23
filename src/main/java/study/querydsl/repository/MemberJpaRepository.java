@@ -151,7 +151,7 @@ public class MemberJpaRepository {
                 .leftJoin(member.team, team)
                 .where(
                         allEq(
-                                condition.getUsername(), 
+                                condition.getUsername(),
                                 condition.getTeamName(),
                                 condition.getAgeGoe(),
                                 condition.getAgeLoe()))
